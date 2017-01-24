@@ -1,0 +1,212 @@
+# this defines the stack
+# the complete name of the stack is <stack>-<stage>
+service: cadec
+provider: 
+  name: aws
+  stage: dev
+  profile: sw
+  region: eu-west-1
+custom:
+  myStage: ${opt:stage, self:provider.stage}
+  iotCertificateArn: arn:aws:iot:eu-west-1:684938241438:cert/5896ab0df82d03dd195a3ea4579f56f75f3dd1471ab2cb34fdb4008d673a7f45
+  lambda_users: ${self:service}-${self:provider.stage}-users
+  lambda_messages: ${self:service}-${self:provider.stage}-messages
+  table_users: ${self:provider.stage}-users
+  table_messages: ${self:provider.stage}-messages
+plugins:
+  - serverless-webpack
+package:
+  include:
+    - index.js
+    - src/
+functions:
+  graphql:
+    handler: index.graphql
+    environment:
+        Users_Table: ${self:custom.table_users}
+        Messages_Table: ${self:custom.table_messages}
+        Users_Lambda: ${self:custom.lambda_users}
+        Messages_Lambda: ${self:custom.lambda_messages}
+    timeout: 30
+    events:
+      - http:
+          path: graphql
+          method: POST
+          cors: true
+  users:
+    handler: index.users
+    environment:
+        Users_Table: ${self:provider.stage}-users
+        Messages_Lambda: ${self:service}-${self:provider.stage}-messages
+    events: 
+      - http:
+          path: users/{id}
+          method: GET
+          cors: true
+          integration: lambda
+          request: 
+            parameters:
+              paths:
+                id: true
+  messages:
+    handler: index.messages
+    environment:
+        Messages_Table: ${self:provider.stage}-messages
+    events: 
+      - http:
+          path: messages/{id}
+          method: GET
+          integration: lambda
+          cors: true
+          request: 
+            parameters:
+              paths:
+                id: true
+  reducer:
+      handler: index.reducer
+      environment:
+              IOT_Endpoint: a31ovqfkmg1ev8.iot.eu-west-1.amazonaws.com
+              State_Topic: $aws/things/dev-cadec-messagesX/state 
+              Lambdas: "${self:custom.lambda_users}/${self:custom.lambda_messages}"
+      events:
+        - http:
+            path: reducer
+            method: POST
+            integration: lambda
+            cors: true
+        - iot:
+            sql: "SELECT * FROM '$aws/things/dev-cadec-messagesX/shadow/update'"
+resources:
+  Resources:
+    CadecMessagesThing:
+      Type: AWS::IoT::Thing
+      Properties: 
+        ThingName:  ${self:provider.stage}-cadec-messagesX
+    IoTThingPolicy:
+      Type: AWS::IoT::Policy
+      Properties:
+        PolicyName: cadec-iot-policy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - iot:Publish
+                - iot:Subscribe
+                - iot:Connect
+                - iot:Receive
+              Resource: '*'
+    CadecMessagesPolicyPrincipalAttachmentCert:
+      Type: AWS::IoT::PolicyPrincipalAttachment
+      Properties:
+        PolicyName: { Ref: IoTThingPolicy }
+        Principal: ${self:custom.iotCertificateArn}
+    CadecMessagesThingPrincipalAttachmentCert:
+      Type: AWS::IoT::ThingPrincipalAttachment
+      Properties:
+        ThingName: { Ref: CadecMessagesThing }
+        Principal: ${self:custom.iotCertificateArn}
+    IamIoTRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Effect: Allow
+              Principal:
+                Service:
+                  - iot.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/AWSLambdaFullAccess
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole 
+          - arn:aws:iam::aws:policy/AWSIoTDataAccess
+    IamIoTPolicy:
+          Type: AWS::IAM::Policy
+          Properties:
+            PolicyName: cadec-iam-iot-policy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - dynamodb:GetItem
+                    - dynamodb:PutItem
+                    - dynamodb:Scan
+                    - dynamodb:Query
+                  Resource: arn:aws:dynamodb:*
+            Roles:
+              - Ref: IamIoTRole
+    IamRoleLambdaExecution:
+      Type: AWS::IAM::Role
+      Properties:
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/AWSLambdaFullAccess
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+          - arn:aws:iam::aws:policy/AWSIoTDataAccess
+    CadecMessagesThingRule:
+      Type: AWS::IoT::TopicRule
+#      DependsOn: reducer
+      Properties:
+        TopicRulePayload:
+          RuleDisabled: false
+          Sql: "SELECT * FROM '$aws/things/dev-cadec-messagesX/shadow/update'"
+          Actions:
+            - Lambda:
+                FunctionArn:
+                  Fn::Join:
+                  - ""
+                  - - "arn:aws:lambda:${self:provider.region}:"
+                    - Ref : "AWS::AccountId"
+                    - ":function:${self:service}-${self:provider.stage}-reducer"
+    UsersDynamo:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties: 
+        TableName: ${self:provider.stage}-users
+        AttributeDefinitions: 
+          - 
+            AttributeName: id
+            AttributeType: S
+        KeySchema: 
+          - 
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput: 
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    MessagesDynamo:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.stage}-messages
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    DynamoDBIamPolicy:
+      Type: AWS::IAM::Policy
+      DependsOn: MessagesDynamo
+      Properties:
+        PolicyName: lambda-dynamodb
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:Scan
+                - dynamodb:Query
+              Resource: arn:aws:dynamodb:*
+        Roles:
+          - Ref: IamRoleLambdaExecution

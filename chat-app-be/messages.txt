@@ -1,0 +1,31 @@
+{
+    "type": "CREATE_MESSAGE",
+    "message": {
+        "message": "4 message"
+    }
+}
+
+{
+    "type": "DELETE_MESSAGE",
+    "id": "6b78ba54-09d2-4306-af63-8f8879a4a2d4"
+}
+
+{
+    "type": "UPDATE_MESSAGE",
+    "message": {
+        "id": "dd9e8583-f01c-43b0-b892-d62907a1515f",
+        "message": "2 message got updated"
+    }
+}
+
+{
+    "type": "LIST_MESSAGES",
+}
+
+{
+    "type": "GET_MESSAGE",
+    "id": "efa4ec6f-8d12-4837-aff2-ce361596ada5",
+}
+
+
+

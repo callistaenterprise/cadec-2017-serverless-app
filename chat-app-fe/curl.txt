@@ -1,0 +1,4 @@
+
+'query{messages{id,message}}'
+
+curl -XPOST -H "Content-Type:application/graphql" -d '{"query": "{messages{id,message}}"}' https://vmwuc84ob5.execute-api.eu-west-1.amazonaws.com/dev/graphql

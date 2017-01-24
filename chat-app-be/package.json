@@ -1,0 +1,36 @@
+{
+  "name": "chat-app-be",
+  "version": "1.0.0",
+  "description": "Serverless chat app backend using dynamo, graphql, api gateway and SNS",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "stephen white",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.18.2",
+    "babel-loader": "^6.2.8",
+    "babel-plugin-transform-runtime": "^6.15.0",
+    "babel-polyfill": "^6.16.0",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-stage-0": "^6.16.0",
+    "chai": "^3.5.0",
+    "chai-as-promised": "^5.3.0",
+    "chai-things": "^0.2.0",
+    "exports-loader": "^0.6.3",
+    "json-loader": "^0.5.4",
+    "lambda-wrapper": "^0.1.2",
+    "mocha": "^3.2.0",
+    "serverless-webpack": "^1.0.0-rc.3",
+    "webpack": "^1.13.1"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.7.7",
+    "babel-runtime": "^6.18.0",
+    "graphql": "^0.4.14",
+    "graphql-custom-types": "^0.2.0",
+    "serverless-helpers-js": "~0.0.3",
+    "uuid": "^3.0.1"
+  }
+}

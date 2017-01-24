@@ -1,0 +1,54 @@
+{
+  "name": "chat-app-fe",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+    "react-scripts": "0.8.5",
+    "react-toolbox-themr": "^1.0.1"
+  },
+  "dependencies": {
+    "aws-mqtt-client": "0.0.5",
+    "immutability-helper": "^2.1.1",
+    "immutable": "^3.8.1",
+    "jsdom": "^9.8.3",
+    "material-design-icons": "^3.0.1",
+    "node-uuid": "^1.4.7",
+    "ramda": "^0.22.1",
+    "react": "^15.3.1",
+    "react-addons-create-fragment": "^15.3.2",
+    "react-addons-css-transition-group": "^15.4.2",
+    "react-dom": "^15.3.1",
+    "react-redux": "^4.4.5",
+    "react-router": "^2.8.1",
+    "react-toolbox": "^2.0.0-beta.4",
+    "recompose": "^0.20.2",
+    "redux": "^3.6.0",
+    "serverless-single-page-app-plugin": "file:./serverless-single-page-app-plugin"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "deploy": "npm run build && serverless syncToS3",
+    "toolbox": "react-toolbox-themr"
+  },
+  "reactToolbox": {
+    "include": [
+      "BUTTON",
+      "APP_BAR",
+      "INPUT",
+      "LIST",
+      "PROGRESS_BAR",
+      "RIPPLE"
+    ],
+    "customProperties": {
+      "animation-duration": "0.3s",
+      "color-accent": "var(--palette-pink-a200)",
+      "color-accent-dark": "var(--palette-pink-700)",
+      "color-primary-contrast": "var(--color-dark-contrast)",
+      "color-accent-contrast": "var(--color-dark-contrast)"
+    },
+    "output": "src/assets/react-toolbox"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "serverless-single-page-app-plugin",
+  "version": "1.0.0",
+  "description": "A plugin to simplify deploying Single Page Application using S3 and CloudFront",
+  "author": "",
+  "license": "MIT",
+  "scripts": {
+    "compile": "babel index.es5.js --out-file index.js"
+  },
+  "devDependencies": {
+    "babel-core": "^6.18.2",
+    "babel-loader": "^6.2.8",
+    "babel-plugin-transform-runtime": "^6.15.0",
+    "babel-polyfill": "^6.16.0",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-stage-0": "^6.16.0",
+    "chai": "^3.5.0",
+    "chai-as-promised": "^5.3.0",
+    "chai-things": "^0.2.0",
+    "exports-loader": "^0.6.3",
+    "json-loader": "^0.5.4",
+    "lambda-wrapper": "^0.1.2",
+    "mocha": "^3.2.0",
+    "serverless-webpack": "^1.0.0-rc.3",
+    "webpack": "^1.13.1"
+  }
+}

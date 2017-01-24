@@ -1,0 +1,11 @@
+{
+  "name": "chat-app-fe-deploy",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+  },
+  "dependencies": {
+    "serverless-single-page-app-plugin": "file:./serverless-single-page-app-plugin"  },
+  "scripts": {
+  }
+}
